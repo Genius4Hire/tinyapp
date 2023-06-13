@@ -12,24 +12,30 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+app.get("/hello", (req, res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
-
 });
 
 app.get("/urls.json", (req, res) => {
-
   res.json(urlDatabase);
 });
 
 
-
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+app.get("/urls/:id", (req, res) => {
+  let shortName = req.params.id;
+  let longName = urlDatabase[shortName];
+  const templateVars = { 
+    id: shortName, 
+    longURL: longName 
+  };
+  res.render("urls_show", templateVars);
 });
 
 
