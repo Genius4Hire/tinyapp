@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/Genius4Hire/tinyapp/issues"
   },
-  "homepage": "https://github.com/Genius4Hire/tinyapp#readme"
+  "homepage": "https://github.com/Genius4Hire/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
