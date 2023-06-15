@@ -1,10 +1,12 @@
 const express = require("express");
 const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine","ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
+app.use(cookieParser())
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -48,14 +50,20 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  userName = req.cookies["userID"];
   const templateVars = {
+    userName: userName,
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  userName = req.cookies["userID"];
+  const templateVars = {
+    userName: userName,
+  };  
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls.json", (req, res) => {
@@ -81,7 +89,6 @@ app.post("/login", (req, res) => {
 });
 
 
-
 //  ##################################################################
 // ###################### ROUTES WITH PARAMETERS ###################### 
 //  ##################################################################
@@ -93,11 +100,14 @@ app.post("/urls/:id", (req,res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  let shortName = req.params.id;
-  let longName = urlDatabase[shortName];
+  const shortName = req.params.id;
+  const longName = urlDatabase[shortName];
+  const userName = req.cookies["userID"];
+
   const templateVars = { 
     id: shortName, 
-    longURL: longName 
+    longURL: longName,
+    userName: userName,
   };
   res.render("urls_show", templateVars);
 });

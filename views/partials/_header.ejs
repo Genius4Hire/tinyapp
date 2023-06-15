@@ -1,19 +1,30 @@
 <header>
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
     <a class="navbar-brand" href="/urls">TinyApp</a>
-    <form class="form-inline" action="/login" method="POST">
-      <div class="form-group mb-2">
 
-        <input
-          class="form-control"
-          type="email"
-          name="userName"
-          placeholder="username"
-          style="width: 100px; margin: 0.2em;"
-        />
-        <button type="submit" class="btn btn-primary" style="width: 100px; margin: 0.2em;">Login</button>
+    <% if (!userName) { %>
+      <div>
+        <form class="form-inline" action="/login" method="POST">
+          <div class="form-group mb-2">
+            <input
+              class="form-control"
+              type="email"
+              name="userName"
+              placeholder="username"
+              style="width: 100px; margin: 0.2em;"
+            />
+            <button type="submit" class="btn btn-primary" style="width: 100px; margin: 0.2em;">Login</button>
+          </div>
+        </form>
       </div>
-    </form>
+    <% } else { %>
+      <div><%= userName %></div>
+      <form class="form-inline" action="/logout" method="POST">
+        <div class="form-group mb-2">
+          <button type="submit" class="btn btn-primary" style="width: 100px; margin: 0.2em;">Logout</button>
+        </div>
+      </form>
+    <% } %>
     <button
       class="navbar-toggler"
       type="button"
