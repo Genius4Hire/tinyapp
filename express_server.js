@@ -24,6 +24,17 @@ const generateRandomString = function() {
   return shortCode;
 };
 
+const findKeyByValue = function(object, value) {
+  // run through each key-value pair in the object...
+  for (let key in object){
+    // if we found a key...
+    if (value === object[key]) {
+      // stop the show, and return the value associated with the key we found
+      return key;
+    }
+  }
+}
+
 //  ##################################################################
 // ########################### ROUTES #################################
 //  ##################################################################
@@ -46,7 +57,7 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   const shortRando = generateRandomString();
   urlDatabase[shortRando] = req.body.longURL;
-  res.redirect(`/urls/${shortRando}`);
+  res.redirect(`/urls`);
 });
 
 app.get("/urls/new", (req, res) => {
@@ -59,6 +70,12 @@ app.get("/urls.json", (req, res) => {
 //  ##################################################################
 // ###################### ROUTES WITH PARAMETERS ###################### 
 //  ##################################################################
+
+app.post("/urls/:id", (req,res) => {
+  const shortName = req.params.id;
+  urlDatabase[shortName] = req.body.newLongName;
+  res.redirect(`/urls`);
+});
 
 app.get("/urls/:id", (req, res) => {
   let shortName = req.params.id;
@@ -74,6 +91,11 @@ app.get("/u/:id", (req, res) => {
   const shortName = req.params.id;
   const longURL = urlDatabase[shortName];
   res.redirect(longURL);
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id];
+  res.redirect(`/urls`);
 });
 
 app.listen(PORT, () => {
