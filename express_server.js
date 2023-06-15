@@ -36,7 +36,7 @@ const findKeyByValue = function(object, value) {
 }
 
 //  ##################################################################
-// ########################### ROUTES #################################
+// ########################### GET ROUTES #############################
 //  ##################################################################
 
 app.get("/", (req, res) => {
@@ -54,12 +54,6 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-app.post("/urls", (req, res) => {
-  const shortRando = generateRandomString();
-  urlDatabase[shortRando] = req.body.longURL;
-  res.redirect(`/urls`);
-});
-
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
@@ -67,6 +61,27 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
+
+//  ##################################################################
+// ########################## POST ROUTES #############################
+//  ##################################################################
+
+app.post("/urls", (req, res) => {
+  const shortRando = generateRandomString();
+  urlDatabase[shortRando] = req.body.longURL;
+  res.redirect(`/urls`);
+});
+
+app.post("/login", (req, res) => {
+  const userName = req.body.userName;
+  console.log(userName);
+  res.cookie("userID", userName);
+  //urlDatabase[shortRando] = req.body.longURL;
+  res.redirect(`/urls`);
+});
+
+
+
 //  ##################################################################
 // ###################### ROUTES WITH PARAMETERS ###################### 
 //  ##################################################################
