@@ -66,6 +66,18 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+app.get("/register", (req, res) => {
+  email = req.params.email;
+  password = req.params.password;
+  userName = req.cookies["userID"];
+  const templateVars = {
+    userName: userName,
+    email: email,
+    password: password,
+  };  
+  res.render("users_reg", templateVars);
+});
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
@@ -85,6 +97,12 @@ app.post("/login", (req, res) => {
   res.cookie("userID", userName);
   res.redirect(`/urls`);
 });
+
+// app.post("/register", (req, res) => {
+//   const userName = req.body.userName;
+//   res.cookie("userID", userName);
+//   res.redirect(`/urls`);
+// });
 
 app.post("/logout", (req, res) => {
   const userName = req.body.userName;
