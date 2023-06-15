@@ -82,9 +82,14 @@ app.post("/urls", (req, res) => {
 
 app.post("/login", (req, res) => {
   const userName = req.body.userName;
-  console.log(userName);
   res.cookie("userID", userName);
-  //urlDatabase[shortRando] = req.body.longURL;
+  res.redirect(`/urls`);
+});
+
+app.post("/logout", (req, res) => {
+  const userName = req.body.userName;
+  //res.cookie("userID", userName);
+  res.clearCookie("userID");
   res.redirect(`/urls`);
 });
 

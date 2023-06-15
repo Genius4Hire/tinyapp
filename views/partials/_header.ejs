@@ -18,12 +18,14 @@
         </form>
       </div>
     <% } else { %>
-      <div><%= userName %></div>
-      <form class="form-inline" action="/logout" method="POST">
-        <div class="form-group mb-2">
-          <button type="submit" class="btn btn-primary" style="width: 100px; margin: 0.2em;">Logout</button>
-        </div>
-      </form>
+      <div>
+        <form class="form-inline" action="/logout" method="POST">
+          <span style="margin: 0.3em;"><%= userName %></span>
+          <div class="form-group mb-2">
+            <button type="submit" class="btn btn-primary" style="width: 100px; margin: 0.2em;">Logout</button>
+          </div>
+        </form>
+      </div>
     <% } %>
     <button
       class="navbar-toggler"
