@@ -80,22 +80,28 @@ const userExists = function(email) {
 
 const urlsForUser = function(userID) {
   const urls = [];
+  let found = false;
   for (const url in urlDatabase) {
     const currentURL = urlDatabase[url];
     //  console.log("looking in", );
     //  console.log("  └─► ", )
     // console.log("URL:",url);
-    //console.log("userID.id", userID)
+    // console.log("userID.id", userID.id)
     // console.log("urlDatabase[url].userID", urlDatabase[url].userID)
 
-    if (urlDatabase[url].userID === userID) {
+    if (urlDatabase[url].userID === userID.id) {
       console.log(`found url for ${userID}!`)
       urls.push(url);
+      found = true;
     };
     // }
   }
   // console.log("urls: ",urls);
-  return urls;
+  if (found) {
+    return urls;
+  } else {
+    return null;
+  }
 };
 
 //  ##################################################################
@@ -132,7 +138,8 @@ app.get("/urls", (req, res) => {
       urls: urls,
       urlDatabase: urlDatabase,
     };
-    // urlsForUser(userID);
+    console.log(urls);
+    console.log(urlDatabase)
     res.render("urls_index", templateVars);
   } else {
     res.redirect(401,"login");
@@ -143,22 +150,19 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const userID = req.cookies["TinyAppSessionCookie"];
   if (isLoggedin(userID)) {
-    const userID = req.cookies["TinyAppSessionCookie"];
     const user = users[userID];
-    const currentUrls = urlsForUser(user.id);
+    const urls = urlsForUser(user);
     console.log("User id:", user.id)
-    console.log("List of current urls",currentUrls);
+    console.log("List of current urls",urls);
     const templateVars = {
       user: user,
-      urls: currentUrls,
+      urls: urls,
       urlDatabase: urlDatabase,
     };  
     res.render("urls_new", templateVars);
   } else {
-    console.log("Not logged in!");
-    res.redirect("/login");
-    console.log("#############/urls/new###########");
-
+    res.redirect(401, "/login");
+    
   }
 });
 
@@ -196,9 +200,10 @@ app.post("/urls", (req, res) => {
     const shortRando = generateRandomString();
     const userID = req.cookies["TinyAppSessionCookie"];
     urlDatabase[shortRando] = {
-      longURl : req.body.longURL,
-      id : userID,
+      longURL : req.body.longURL,
+      userID : userID,
     }
+    console.log(urlDatabase);
     res.redirect(`/urls`);
   } else {
     res.statusMessage = "Only logged-in users may add URL's!"
@@ -227,7 +232,6 @@ app.post("/login", (req, res) => {
     }
   }
   if (!passwordCorrect){
-    res.statusMessage = "Only logged-in users may add URL's!"
     res.redirect(403, "/login");
   }
 });
@@ -244,9 +248,7 @@ app.post("/register", (req, res) => {
   const userID = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
-  
-  console.log("userExists(email): ", userExists(email))
-  if (!userExists(email)) {
+  if (!userExists(email) && !(email === '' || password === '')) {
     const newUser = {
       id: userID,
       email: email,
@@ -256,8 +258,7 @@ app.post("/register", (req, res) => {
     console.log("Adding new user:",users);
     res.cookie("TinyAppSessionCookie", userID);
   } else {
-    console.log("User already exists.");
-    res.redirect("login");
+    res.redirect(400, "/login");
   }
 //  res.redirect(`/urls`);
 });

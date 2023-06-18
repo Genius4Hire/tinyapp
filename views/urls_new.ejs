@@ -38,37 +38,37 @@
               <button type="submit" class="btn btn-primary">Submit</button>
             </div>
           </form>
-      <% } %>
-
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Short URL ID</th>
-            <th scope="col">Long URL</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if (urls) { %>
-            <h4>Current URLs:</h4>
-            <% for (const url of urls) { %>
+        <% } %>
+        </br>
+        <% if (urls) { %>
+          <p>Current URLS:</p>
+          <table class="table">
+            <thead>
               <tr>
-                <td><a href="/urls/<%= url.id %>"><%= url %></a></td>
-                <td><%= urlDatabase[url].longURL %></td>
-                <td>
-                  <form method="POST" action="/urls/<%= url %>/delete">
-                    <button type="submit" class="btn btn-primary">Delete</button>
-                  </form>
-                </td>
-                <td>
-                  <form method="GET" action="/urls/<%= url %>">
-                    <button type="submit" class="btn btn-primary">Edit</button>
-                  </form>
-                </td>
+                <th scope="col">Short URL ID</th>
+                <th scope="col">Long URL</th>
               </tr>
-            <% } %>
-          <% } %>
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              <% for (const url of urls) { %>
+                <tr>
+                  <td><a href="/urls/<%= url.id %>"><%= url %></a></td>
+                  <td><%= urlDatabase[url].longURL %></td>
+                  <td>
+                    <form method="POST" action="/urls/<%= url %>/delete">
+                      <button type="submit" class="btn btn-primary">Delete</button>
+                    </form>
+                  </td>
+                  <td>
+                    <form method="GET" action="/urls/<%= url %>">
+                      <button type="submit" class="btn btn-primary">Edit</button>
+                    </form>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        <% } %>
     </main>
     <!-- Bootstrap JS -->
     <script
