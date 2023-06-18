@@ -1,26 +1,14 @@
 <header>
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
     <a class="navbar-brand" href="/urls">TinyApp</a>
-
-    <% if (!userName) { %>
-      <div>
-        <form class="form-inline" action="/login" method="POST">
-          <div class="form-group mb-2">
-            <input
-              class="form-control"
-              type="email"
-              name="userName"
-              placeholder="username"
-              style="width: 100px; margin: 0.2em;"
-            />
-            <button type="submit" class="btn btn-primary" style="width: 100px; margin: 0.2em;">Login</button>
-          </div>
-        </form>
-      </div>
+    <% if (user === "") { %>
+      <a href="/register">Register!</a>
+      <a href="/login">Login</a>
+      
     <% } else { %>
       <div>
         <form class="form-inline" action="/logout" method="POST">
-          <span style="margin: 0.3em;"><%= userName %></span>
+          <span style="margin: 0.3em;">Welcome, <%= user.email %></span>
           <div class="form-group mb-2">
             <button type="submit" class="btn btn-primary" style="width: 100px; margin: 0.2em;">Logout</button>
           </div>
@@ -38,7 +26,6 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
-
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
@@ -46,4 +33,5 @@
       </div>
     </div>
   </nav>
+  
 </header>

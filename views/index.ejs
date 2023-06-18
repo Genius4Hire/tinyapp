@@ -14,36 +14,13 @@
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
-
-    <title>New URL - TinyApp Example</title>
+    <title>TinyApp</title>
   </head>
   <body>
     <%- include('partials/_header') %>
     <main style="margin: 1em;">
-      <h3>Register for TinyApp</h3>
-      <form class="form-inline" action="/register" method="POST">
-        <div class="form-group mb-2">
-          <label for="email">Choose a username:</label>
-          <input
-            class="form-control"
-            type="email"
-            name="email"
-            placeholder="user@valid_email.com"
-            style="width: 300px; margin: 1em"
-          />
-        </div></br>
-        <div class="form-group mb-2">
-          <label for="password">Choose a password:</label>
-          <input
-            class="form-control"
-            type="password"
-            name="password"
-            placeholder="password"
-            style="width: 300px; margin: 1em"
-          />
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
-      </form>
+      <h1>Welcome to Tiny App!</h1>
+      <p>Please log in above, or <a href="/register">register here.</a></p>
     </main>
     <!-- Bootstrap JS -->
     <script
