@@ -17,24 +17,25 @@
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
-        <h5 class="card-title">TinyURL for: <%= longURL %></h5>
+        <h5 class="card-title">TinyURL for: <%= urlDatabase[urlID].longURL %></h5>
         <p class="card-text">
-          Short URL: <a href="/u/<%= id %>">/u/<%= id %></a>
+          Short URL: <a href="/u/<%= urlID %>">/u/<%= urlID %></a>
         </p>
       </div>
-      <form class="form-inline" action="/urls/<%= id %>" method="POST">
-        <div class="form-group mb-2">
-          <label for="newLongName">Update:</label>
-          <input
-            class="form-control"
-            type="text"
-            name="newLongName"
-            placeholder="<%= longURL %>"
-            style="width: 300px; margin: 1em"
-          />
+      <div class="card text-center">
+        <form class="form-inline" action="/urls/<%= urlID %>" method="POST">
+          <div class="form-group mb-2">
+            <input
+              class="form-control"
+              type="text"
+              name="newLongName"
+              placeholder="Update with new URL.."
+              style="width: 300px; margin: 1em"
+            />
+          </div>
           <button type="submit" class="btn btn-primary">Update</button>
-        </div>
-      </form>
+        </form>
+      </div>
       <div class="card-footer text-muted"></div>
     </div>
     <!-- Bootstrap JS -->

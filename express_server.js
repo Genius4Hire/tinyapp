@@ -143,7 +143,6 @@ app.get("/urls", (req, res) => {
     res.render("urls_index", templateVars);
   } else {
     res.redirect(401,"login");
-    //could be better..
   }
 });
 
@@ -208,6 +207,7 @@ app.post("/urls", (req, res) => {
   } else {
     res.statusMessage = "Only logged-in users may add URL's!"
     res.status(403);
+    res.redirect(401, "/login");
   }
 });
 
@@ -274,28 +274,46 @@ app.post("/logout", (req, res) => {
 //  ##################################################################
 
 app.post("/urls/:id", (req,res) => {
-  const shortName = req.params.id;
-  urlDatabase[shortName] = req.body.newLongName;
+  // const shortName = req.params.id;
+  // urlDatabase[shortName] = req.body.newLongName;
+  const userID = req.cookies["TinyAppSessionCookie"];
+  const id = req.params.id;
+  console.log(req.body.newLongName);
+  urlDatabase[id].longURL = req.body.newLongName;
+
   res.redirect(`/urls`);
 });
 
 app.get("/urls/:id", (req, res) => {
   const userID = req.cookies["TinyAppSessionCookie"];
-  const user = users.userID;
-  const shortName = req.params.id;
-  const longName = urlDatabase[shortName];
-  const templateVars = { 
-    user: user, 
-    id: shortName, 
-    longURL: longName,
-  };
-  res.render("urls_show", templateVars);
+  const id = req.params.id;
+  if (isLoggedin(userID)) {
+    const user = users[userID];
+    const urls = urlsForUser(user);
+    const templateVars = {
+      urlID : id,
+      user: user,
+      urls: urls,
+      urlDatabase: urlDatabase,
+    };
+    console.log(urls);
+    console.log(urlDatabase)
+    res.render("urls_show", templateVars);
+
+  } else {
+    res.redirect(400, "/login");
+  }
 });
 
 app.get("/u/:id", (req, res) => {
-  const shortName = req.params.id;
-  const longURL = urlDatabase[shortName];
-  res.redirect(longURL);
+
+  if (urlDatabase[req.params.id]) {
+    const longURL = urlDatabase[req.params.id].longURL;
+    res.redirect(longURL);
+  } else {
+    res.redirect(404, "/login");    
+  }
+
 });
 
 app.post("/urls/:id/delete", (req, res) => {

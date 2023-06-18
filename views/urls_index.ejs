@@ -31,7 +31,7 @@
           <% if (urls) { %>
             <% for (const url of urls) { %>
               <tr>
-                <td><a href="/urls/<%= url.id %>"><%= url %></a></td>
+                <td><a href="/urls/<%= url %>"><%= url %></a></td>
                 <td><%= urlDatabase[url].longURL %></td>
                 <td>
                   <form method="POST" action="/urls/<%= url %>/delete">
