@@ -12,7 +12,7 @@ app.use(cookieSession({
   name: "session",
   keys: ["This is super secure and a great hashing phrase!"],
   maxAge: 24 * 60 * 60 * 1000,
-}))
+}));
 
 //  ##################################################################
 // ######################## Global Constants ##########################
@@ -42,21 +42,12 @@ const urlsForUser = function(userID) {
   const urls = [];
   let found = false;
   for (const url in urlDatabase) {
-    const currentURL = urlDatabase[url];
-    //  console.log("looking in", );
-    //  console.log("  └─► ", )
-    // console.log("URL:",url);
-    // console.log("userID.id", userID.id)
-    // console.log("urlDatabase[url].userID", urlDatabase[url].userID)
-
     if (urlDatabase[url].userID === userID.id) {
-      console.log(`found url for ${userID}!`)
+      console.log(`found url for ${userID}!`);
       urls.push(url);
       found = true;
-    };
-    // }
+    }
   }
-  // console.log("urls: ",urls);
   if (found) {
     return urls;
   } else {
@@ -68,10 +59,6 @@ const urlsForUser = function(userID) {
 // ########################### GET ROUTES #############################
 //  ##################################################################
 
-// app.get("/", (req, res) => {
-//   res.send("Hello!");
-// });
-
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
@@ -79,7 +66,7 @@ app.get("/hello", (req, res) => {
 app.get("/login", (req, res) => {
   const userID = req.session.user_id;
   if (isLoggedin(userID, users)) {
-    res.redirect("/urls")
+    res.redirect("/urls");
   } else {
     const templateVars = {
       user: '',
@@ -99,11 +86,10 @@ app.get("/urls", (req, res) => {
       urlDatabase: urlDatabase,
     };
     console.log(urls);
-    console.log(urlDatabase)
+    console.log(urlDatabase);
     res.render("urls_index", templateVars);
   } else {
     res.status(401).send(`Only logged-in users may view URL's! Please <a href="/login">Log in..</a>`);
-    //res.redirect(401,"login");
   }
 });
 
@@ -112,13 +98,13 @@ app.get("/urls/new", (req, res) => {
   if (isLoggedin(userID, users)) {
     const user = users[userID];
     const urls = urlsForUser(user);
-    console.log("User id:", user.id)
+    console.log("User id:", user.id);
     console.log("List of current urls",urls);
     const templateVars = {
       user: user,
       urls: urls,
       urlDatabase: urlDatabase,
-    };  
+    };
     res.render("urls_new", templateVars);
   } else {
     res.status(401).send(`Only logged-in users may add URL's! Please <a href="/login">Log in..</a>`);
@@ -142,12 +128,11 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  templateVars = {
+  const templateVars = {
     user: "",
-  }
-  res.render("index", templateVars)
+  };
+  res.render("index", templateVars);
 });
-
 
 //  ##################################################################
 // ########################## POST ROUTES #############################
@@ -161,7 +146,7 @@ app.post("/urls", (req, res) => {
     urlDatabase[shortRando] = {
       longURL : req.body.longURL,
       userID : userID,
-    }
+    };
     console.log(urlDatabase);
     res.redirect(`/urls`);
   } else {
@@ -173,35 +158,21 @@ app.post("/urls", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  let userFound = false;
   let passwordCorrect = false;
-  //console.log("Attempt: ",email, password);
   for (const user in users) {
-    //console.log(users[user].email)
     if (users[user].email === email) {
-      userFound = true;
-      //console.log("Good email")
       if (bcrypt.compareSync(password, users[user].hashedPassword)) {
         passwordCorrect = true;
-        //console.log("Good password")
-        req.session.user_id = users[user].id; 
+        req.session.user_id = users[user].id;
         res.redirect('/urls');
         
       }
     }
   }
-  if (!passwordCorrect){
+  if (!passwordCorrect) {
     res.redirect(403, "/login");
   }
 });
-
-// const users = {
-//   userRandomID: {
-//     id: "userRandomID",
-//     email: "user@example.com",
-//     password: "purple-monkey-dinosaur",
-//   }
-// };
 
 app.post("/register", (req, res) => {
   const userID = generateRandomString();
@@ -213,7 +184,7 @@ app.post("/register", (req, res) => {
       id: userID,
       email: email,
       hashedPassword: hashedPassword,
-    }
+    };
     users[userID] = newUser;
     console.log("Adding new user:",users);
     req.session.user_id = userID;
@@ -229,14 +200,11 @@ app.post("/logout", (req, res) => {
   res.redirect("login");
 });
 
-
 //  ##################################################################
-// ###################### ROUTES WITH PARAMETERS ###################### 
+// ###################### ROUTES WITH PARAMETERS ######################
 //  ##################################################################
 
 app.post("/urls/:id", (req,res) => {
-  // const shortName = req.params.id;
-  // urlDatabase[shortName] = req.body.newLongName;
   const userID = req.session.user_id;
   const id = req.params.id;
   console.log(req.body.newLongName);
@@ -257,24 +225,20 @@ app.get("/urls/:id", (req, res) => {
       urlDatabase: urlDatabase,
     };
     console.log(urls);
-    console.log(urlDatabase)
+    console.log(urlDatabase);
     res.render("urls_show", templateVars);
-
   } else {
     res.status(400).send(`Only logged-in users may edit URL's! Please <a href="/login">Log in..</a>`);
-    
   }
 });
 
 app.get("/u/:id", (req, res) => {
-
   if (urlDatabase[req.params.id]) {
     const longURL = urlDatabase[req.params.id].longURL;
     res.redirect(longURL);
   } else {
-    res.redirect(404, "/login");    
+    res.redirect(404, "/login");
   }
-
 });
 
 app.post("/urls/:id/delete", (req, res) => {
@@ -290,4 +254,4 @@ process.on('SIGTERM', () => {
   shutdownManager.terminate(() => {
     console.log('Server is gracefully terminated');
   });
-}); 
+});
