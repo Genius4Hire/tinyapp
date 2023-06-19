@@ -1,5 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
+const bcrypt = require("bcryptjs");
 const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080; // default port 8080
@@ -24,16 +25,7 @@ const urlDatabase = {
 };
 
 const users = {
-  aJ48lW: {
-    id: "aJ48lW",
-    email: "u1@a.com",
-    password: "p",
-  },
-  w9tm3e: {
-    id: "w9tm3e",
-    email: "u2@a.com",
-    password: "d",
-  },
+
 };
 
 //  ##################################################################
@@ -142,7 +134,8 @@ app.get("/urls", (req, res) => {
     console.log(urlDatabase)
     res.render("urls_index", templateVars);
   } else {
-    res.redirect(401,"login");
+    res.status(401).send(`Only logged-in users may view URL's! Please <a href="/login">Log in..</a>`);
+    //res.redirect(401,"login");
   }
 });
 
@@ -160,8 +153,7 @@ app.get("/urls/new", (req, res) => {
     };  
     res.render("urls_new", templateVars);
   } else {
-    res.redirect(401, "/login");
-    
+    res.status(401).send(`Only logged-in users may add URL's! Please <a href="/login">Log in..</a>`);
   }
 });
 
@@ -205,9 +197,8 @@ app.post("/urls", (req, res) => {
     console.log(urlDatabase);
     res.redirect(`/urls`);
   } else {
-    res.statusMessage = "Only logged-in users may add URL's!"
-    res.status(403);
-    res.redirect(401, "/login");
+    res.status(401).send(`Only logged-in users may add URL's! Please <a href="/login">Log in..</a>`);
+
   }
 });
 
@@ -222,7 +213,7 @@ app.post("/login", (req, res) => {
     if (users[user].email === email) {
       userFound = true;
       //console.log("Good email")
-      if (users[user].password === password) {
+      if (bcrypt.compareSync(password, users[user].hashedPassword)) {
         passwordCorrect = true;
         //console.log("Good password")
         res.cookie("TinyAppSessionCookie", users[user].id); 
@@ -248,23 +239,26 @@ app.post("/register", (req, res) => {
   const userID = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10);;
   if (!userExists(email) && !(email === '' || password === '')) {
     const newUser = {
       id: userID,
       email: email,
-      password: password,
+      hashedPassword: hashedPassword,
     }
     users[userID] = newUser;
     console.log("Adding new user:",users);
     res.cookie("TinyAppSessionCookie", userID);
+
   } else {
     res.redirect(400, "/login");
   }
-//  res.redirect(`/urls`);
+  res.redirect(`/urls`);
 });
 
 app.post("/logout", (req, res) => {
   res.clearCookie("TinyAppSessionCookie");
+
   res.redirect("login");
 });
 
@@ -280,7 +274,6 @@ app.post("/urls/:id", (req,res) => {
   const id = req.params.id;
   console.log(req.body.newLongName);
   urlDatabase[id].longURL = req.body.newLongName;
-
   res.redirect(`/urls`);
 });
 
@@ -301,7 +294,8 @@ app.get("/urls/:id", (req, res) => {
     res.render("urls_show", templateVars);
 
   } else {
-    res.redirect(400, "/login");
+    res.status(400).send(`Only logged-in users may edit URL's! Please <a href="/login">Log in..</a>`);
+    
   }
 });
 
