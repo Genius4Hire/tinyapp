@@ -1,13 +1,18 @@
 const express = require("express");
 const morgan = require("morgan");
 const bcrypt = require("bcryptjs");
-const cookieParser = require("cookie-parser");
+const {generateRandomString, isLoggedin, getUserByEmail} = require('./helpers');
+const cookieSession = require("cookie-session");
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine","ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
-app.use(cookieParser())
+app.use(cookieSession({
+  name: "session",
+  keys: ["This is super secure and a great hashing phrase!"],
+  maxAge: 24 * 60 * 60 * 1000,
+}))
 
 //  ##################################################################
 // ######################## Global Constants ##########################
@@ -25,50 +30,13 @@ const urlDatabase = {
 };
 
 const users = {
-
+  m7dh3e: {
+    id: 'm7dh3e',
+    email: 'u1@a.com',
+    hashedPassword: '$2a$10$rDGtajW/XrVqYYsyeDj3z..qC6MiwF5Ci6gAUVA.2kt0HomucxdyK'
+  },
 };
 
-//  ##################################################################
-// ####################### Helper Functions ###########################
-//  ##################################################################
-
-const generateRandomString = function() {
-  const letters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let shortCode = '';
-  for (x = 0; x < 6; x++) {
-    randomIndex = Math.round(Math.random() * (letters.length - 1));
-    shortCode += letters.slice(randomIndex, randomIndex + 1);
-  }
-  return shortCode;
-};
-
-const findKeyByValue = function(object, value) {
-  // run through each key-value pair in the object...
-  for (let key in object){
-    // if we found a key...
-    if (value === object[key]) {
-      // stop the show, and return the value associated with the key we found
-      return key;
-    }
-  }
-};
-
-const isLoggedin = function(userID) {
-  if (users[userID]) {
-    return true;
-  }
-  return false;
-};
-
-const userExists = function(email) {
-  let exists = false;
-  for (const user in users) {
-    if (users[user].email === email) {
-      exists = true;
-    }
-  }
-  return exists;
-}
 
 const urlsForUser = function(userID) {
   const urls = [];
@@ -109,8 +77,8 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const userID = req.cookies["TinyAppSessionCookie"];
-  if (isLoggedin(userID)) {
+  const userID = req.session.user_id;
+  if (isLoggedin(userID, users)) {
     res.redirect("/urls")
   } else {
     const templateVars = {
@@ -121,8 +89,8 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const userID = req.cookies["TinyAppSessionCookie"];
-  if (isLoggedin(userID)) {
+  const userID = req.session.user_id;
+  if (isLoggedin(userID, users)) {
     const user = users[userID];
     const urls = urlsForUser(user);
     const templateVars = {
@@ -140,8 +108,8 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const userID = req.cookies["TinyAppSessionCookie"];
-  if (isLoggedin(userID)) {
+  const userID = req.session.user_id;
+  if (isLoggedin(userID, users)) {
     const user = users[userID];
     const urls = urlsForUser(user);
     console.log("User id:", user.id)
@@ -158,8 +126,8 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const userID = req.cookies["TinyAppSessionCookie"];
-  if (isLoggedin(userID)) {
+  const userID = req.session.user_id;
+  if (isLoggedin(userID, users)) {
     res.redirect("/urls");
   } else {
     const templateVars = {
@@ -186,10 +154,10 @@ app.get("/", (req, res) => {
 //  ##################################################################
 
 app.post("/urls", (req, res) => {
-  const userID = req.cookies["TinyAppSessionCookie"];
-  if (isLoggedin(userID)) {
+  const userID = req.session.user_id;
+  if (isLoggedin(userID, users)) {
     const shortRando = generateRandomString();
-    const userID = req.cookies["TinyAppSessionCookie"];
+    const userID = req.session.user_id;
     urlDatabase[shortRando] = {
       longURL : req.body.longURL,
       userID : userID,
@@ -216,7 +184,7 @@ app.post("/login", (req, res) => {
       if (bcrypt.compareSync(password, users[user].hashedPassword)) {
         passwordCorrect = true;
         //console.log("Good password")
-        res.cookie("TinyAppSessionCookie", users[user].id); 
+        req.session.user_id = users[user].id; 
         res.redirect('/urls');
         
       }
@@ -239,8 +207,8 @@ app.post("/register", (req, res) => {
   const userID = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
-  const hashedPassword = bcrypt.hashSync(req.body.password, 10);;
-  if (!userExists(email) && !(email === '' || password === '')) {
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+  if (!getUserByEmail(email, users) && !(email === '' || password === '')) {
     const newUser = {
       id: userID,
       email: email,
@@ -248,16 +216,15 @@ app.post("/register", (req, res) => {
     }
     users[userID] = newUser;
     console.log("Adding new user:",users);
-    res.cookie("TinyAppSessionCookie", userID);
-
+    req.session.user_id = userID;
+    res.redirect(`/urls`);
   } else {
     res.redirect(400, "/login");
   }
-  res.redirect(`/urls`);
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("TinyAppSessionCookie");
+  req.session.user_id = '';
 
   res.redirect("login");
 });
@@ -270,7 +237,7 @@ app.post("/logout", (req, res) => {
 app.post("/urls/:id", (req,res) => {
   // const shortName = req.params.id;
   // urlDatabase[shortName] = req.body.newLongName;
-  const userID = req.cookies["TinyAppSessionCookie"];
+  const userID = req.session.user_id;
   const id = req.params.id;
   console.log(req.body.newLongName);
   urlDatabase[id].longURL = req.body.newLongName;
@@ -278,9 +245,9 @@ app.post("/urls/:id", (req,res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const userID = req.cookies["TinyAppSessionCookie"];
+  const userID = req.session.user_id;
   const id = req.params.id;
-  if (isLoggedin(userID)) {
+  if (isLoggedin(userID, users)) {
     const user = users[userID];
     const urls = urlsForUser(user);
     const templateVars = {
