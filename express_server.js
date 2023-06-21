@@ -1,10 +1,22 @@
+//  ##################################################################
+// ######################## Global Constants ##########################
+//  ##################################################################
+
 const express = require("express");
-const morgan = require("morgan");
+const morgan = require("morgan"); 
 const bcrypt = require("bcryptjs");
-const {generateRandomString, isLoggedin, getUserByEmail} = require('./helpers');
 const cookieSession = require("cookie-session");
 const app = express();
 const PORT = 8080; // default port 8080
+
+const {urlDatabase, users}                                              = require('./database');
+const {urlsForUser, generateRandomString, isLoggedin, getUserByEmail}   = require('./helpers');
+
+
+//  ##################################################################
+// ########################## Global Setup ############################
+//  ##################################################################
+
 app.set("view engine","ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
@@ -13,47 +25,6 @@ app.use(cookieSession({
   keys: ["This is super secure and a great hashing phrase!"],
   maxAge: 24 * 60 * 60 * 1000,
 }));
-
-//  ##################################################################
-// ######################## Global Constants ##########################
-//  ##################################################################
-
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "w9tm3e",
-  },
-};
-
-const users = {
-  m7dh3e: {
-    id: 'm7dh3e',
-    email: 'u1@a.com',
-    hashedPassword: '$2a$10$rDGtajW/XrVqYYsyeDj3z..qC6MiwF5Ci6gAUVA.2kt0HomucxdyK'
-  },
-};
-
-
-const urlsForUser = function(userID) {
-  const urls = [];
-  let found = false;
-  for (const url in urlDatabase) {
-    if (urlDatabase[url].userID === userID.id) {
-      console.log(`found url for ${userID}!`);
-      urls.push(url);
-      found = true;
-    }
-  }
-  if (found) {
-    return urls;
-  } else {
-    return null;
-  }
-};
 
 //  ##################################################################
 // ########################### GET ROUTES #############################
@@ -85,8 +56,6 @@ app.get("/urls", (req, res) => {
       urls: urls,
       urlDatabase: urlDatabase,
     };
-    console.log(urls);
-    console.log(urlDatabase);
     res.render("urls_index", templateVars);
   } else {
     res.status(401).send(`Only logged-in users may view URL's! Please <a href="/login">Log in..</a>`);
@@ -98,8 +67,6 @@ app.get("/urls/new", (req, res) => {
   if (isLoggedin(userID, users)) {
     const user = users[userID];
     const urls = urlsForUser(user);
-    console.log("User id:", user.id);
-    console.log("List of current urls",urls);
     const templateVars = {
       user: user,
       urls: urls,
@@ -147,7 +114,6 @@ app.post("/urls", (req, res) => {
       longURL : req.body.longURL,
       userID : userID,
     };
-    console.log(urlDatabase);
     res.redirect(`/urls`);
   } else {
     res.status(401).send(`Only logged-in users may add URL's! Please <a href="/login">Log in..</a>`);
@@ -186,7 +152,6 @@ app.post("/register", (req, res) => {
       hashedPassword: hashedPassword,
     };
     users[userID] = newUser;
-    console.log("Adding new user:",users);
     req.session.user_id = userID;
     res.redirect(`/urls`);
   } else {
@@ -196,9 +161,14 @@ app.post("/register", (req, res) => {
 
 app.post("/logout", (req, res) => {
   req.session.user_id = '';
-
   res.redirect("login");
 });
+
+app.get("/logout", (req, res) => {
+  req.session.user_id = '';
+  res.redirect("login");
+});
+
 
 //  ##################################################################
 // ###################### ROUTES WITH PARAMETERS ######################
@@ -207,15 +177,18 @@ app.post("/logout", (req, res) => {
 app.post("/urls/:id", (req,res) => {
   const userID = req.session.user_id;
   const id = req.params.id;
-  console.log(req.body.newLongName);
   urlDatabase[id].longURL = req.body.newLongName;
   res.redirect(`/urls`);
-});
+}); 
 
 app.get("/urls/:id", (req, res) => {
   const userID = req.session.user_id;
   const id = req.params.id;
   if (isLoggedin(userID, users)) {
+    if (!urlDatabase[id]) {
+      res.status(400).send(`Sorry, that URL does not exist. You can create it <a href="/urls/new">here!</a>`);
+      return;
+    }
     const user = users[userID];
     const urls = urlsForUser(user);
     const templateVars = {
@@ -224,8 +197,8 @@ app.get("/urls/:id", (req, res) => {
       urls: urls,
       urlDatabase: urlDatabase,
     };
-    console.log(urls);
-    console.log(urlDatabase);
+    
+
     res.render("urls_show", templateVars);
   } else {
     res.status(400).send(`Only logged-in users may edit URL's! Please <a href="/login">Log in..</a>`);
@@ -247,7 +220,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Tiny app listening on port ${PORT}!`);
 });
 
 process.on('SIGTERM', () => {

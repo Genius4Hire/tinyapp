@@ -2,6 +2,8 @@
 // ####################### Helper Functions ###########################
 //  ##################################################################
 
+const {urlDatabase, users} = require('./database');
+
 const generateRandomString = function() {
   const letters = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let shortCode = '';
@@ -20,13 +22,8 @@ const isLoggedin = function(userID, users) {
 };
 
 const getUserByEmail = function(email, database) {
-  console.log("database:",database);
-  console.log("email:",email);
   for (let user in database) {
-    console.log("database[user]:", database[user]);
     if (database[user].email === email) {
-      console.log("found:")
-      console.log(database[user]);
       return database[user];
     }
   }
@@ -34,4 +31,21 @@ const getUserByEmail = function(email, database) {
 };
 
 
-module.exports = {generateRandomString, isLoggedin, getUserByEmail}
+const urlsForUser = function(userID) {
+  const urls = [];
+  let found = false;
+  for (const url in urlDatabase) {
+    if (urlDatabase[url].userID === userID.id) {
+      urls.push(url);
+      found = true;
+    }
+  }
+  if (found) {
+    return urls;
+  } else {
+    return null;
+  }
+};
+
+
+module.exports = {urlsForUser, generateRandomString, isLoggedin, getUserByEmail}
